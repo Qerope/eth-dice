@@ -1,0 +1,7 @@
+{
+  "name": "eth-dice",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "truffle test"
+  },
+}
