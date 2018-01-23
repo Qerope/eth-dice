@@ -8,6 +8,18 @@ contract Dice {
         owner = msg.sender;
     }
 
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+    function fund() public payable {}
+
+    function withdraw(uint amount) public onlyOwner {
+        require(amount <= this.balance);
+        owner.transfer(amount);
+    }
+
     function roll(uint8 choice) public payable {
         require(choice >= 1 && choice <= 6);
         require(msg.value >= MIN_BET);
