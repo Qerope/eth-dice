@@ -4,6 +4,8 @@ contract Dice {
     address public owner;
     uint public constant MIN_BET = 0.01 ether;
     uint public maxBetPercent = 5;
+    event BetPlaced(uint indexed id, address indexed player, uint8 choice, uint amount);
+    event BetSettled(uint indexed id, address indexed player, uint8 roll, uint payout);
 
     function Dice() public {
         owner = msg.sender;
