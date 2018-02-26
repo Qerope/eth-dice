@@ -4,7 +4,17 @@ contract Dice {
     address public owner;
     uint public constant MIN_BET = 0.01 ether;
     uint public maxBetPercent = 5;
-    uint nonce;
+    uint public constant EXPIRY_BLOCKS = 250;
+
+    struct Bet {
+        address player;
+        uint8 choice;
+        uint amount;
+        uint blockNumber;
+        bool settled;
+    }
+
+    Bet[] public bets;
     event BetPlaced(uint indexed id, address indexed player, uint8 choice, uint amount);
     event BetSettled(uint indexed id, address indexed player, uint8 roll, uint payout);
 
@@ -24,13 +34,26 @@ contract Dice {
         owner.transfer(amount);
     }
 
-    function roll(uint8 choice) public payable {
+    function placeBet(uint8 choice) public payable returns (uint id) {
         require(choice >= 1 && choice <= 6);
         require(msg.value >= MIN_BET);
         require(msg.value <= (this.balance - msg.value) * maxBetPercent / 100);
-        uint8 result = uint8(uint(keccak256(block.blockhash(block.number - 1), msg.sender, nonce++)) % 6) + 1;
-        if (result == choice) {
-            msg.sender.transfer(msg.value * 5);
+        id = bets.length;
+        bets.push(Bet(msg.sender, choice, msg.value, block.number, false));
+        BetPlaced(id, msg.sender, choice, msg.value);
+    }
+
+    function settle(uint id) public {
+        Bet storage b = bets[id];
+        require(!b.settled);
+        require(block.number > b.blockNumber + 1);
+        b.settled = true;
+        uint8 result = uint8(uint(keccak256(block.blockhash(b.blockNumber + 1), id)) % 6) + 1;
+        uint payout = 0;
+        if (result == b.choice) {
+            payout = b.amount * 5;
+            b.player.transfer(payout);
         }
+        BetSettled(id, b.player, result, payout);
     }
 }
