@@ -47,6 +47,7 @@ contract Dice {
         Bet storage b = bets[id];
         require(!b.settled);
         require(block.number > b.blockNumber + 1);
+        require(block.number <= b.blockNumber + EXPIRY_BLOCKS);
         b.settled = true;
         uint8 result = uint8(uint(keccak256(block.blockhash(b.blockNumber + 1), id)) % 6) + 1;
         uint payout = 0;
@@ -55,5 +56,14 @@ contract Dice {
             b.player.transfer(payout);
         }
         BetSettled(id, b.player, result, payout);
+    }
+
+    // blockhash() returns 0 after 256 blocks, so late bets are refunded instead
+    function refund(uint id) public {
+        Bet storage b = bets[id];
+        require(!b.settled);
+        require(block.number > b.blockNumber + EXPIRY_BLOCKS);
+        b.settled = true;
+        b.player.transfer(b.amount);
     }
 }
