@@ -40,7 +40,7 @@ contract Dice {
         require(msg.value <= (this.balance - msg.value) * maxBetPercent / 100);
         id = bets.length;
         bets.push(Bet(msg.sender, choice, msg.value, block.number, false));
-        BetPlaced(id, msg.sender, choice, msg.value);
+        emit BetPlaced(id, msg.sender, choice, msg.value);
     }
 
     function settle(uint id) public {
@@ -55,7 +55,7 @@ contract Dice {
             payout = b.amount * 5;
             b.player.transfer(payout);
         }
-        BetSettled(id, b.player, result, payout);
+        emit BetSettled(id, b.player, result, payout);
     }
 
     // blockhash() returns 0 after 256 blocks, so late bets are refunded instead
