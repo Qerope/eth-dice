@@ -18,7 +18,7 @@ contract Dice {
     event BetPlaced(uint indexed id, address indexed player, uint8 choice, uint amount);
     event BetSettled(uint indexed id, address indexed player, uint8 roll, uint payout);
 
-    function Dice() public {
+    constructor() public {
         owner = msg.sender;
     }
 
